@@ -12,7 +12,7 @@ def startAmis(app:FastAPI, defaultPath=None):
 
   def amisLoad(title:str, json:str):
     from .amisTemplate import amisTemplate
-    return amisTemplate.replace('{%title%}',title).replace('{%json%}',json).replace('{%version%}',"1.8.0")
+    return amisTemplate.replace('{%title%}',title).replace('{%json%}',json).replace('{%CDN%}',"https://cdn.staticfile.org/amis/1.8.0")
   
   if defaultPath!=None:
     @app.get('/')
@@ -66,7 +66,7 @@ def startAmis(app:FastAPI, defaultPath=None):
     context=sql.get("select title,json from amis where path=??",path)
     if context.__len__()==0:
       return Response(status_code=404)
-    return HTMLResponse(amisLoad(context[0],context[1]))  # type: ignore
+    return HTMLResponse(amisLoad(context[0][0],context[0][1]))
 
   @app.get("/amis/set")
   def setAmisHTML():
