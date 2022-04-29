@@ -1,3 +1,4 @@
+import re
 from fastapi import Body, FastAPI, Path, Request, Response
 from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -6,18 +7,26 @@ import os
 
 __all__ = ["startAmis"]
 
-def startAmis(app:FastAPI, defaultPath=None):
+def startAmis(app:FastAPI, defaultPath=None, password=None):
   sql.set("create table if not exists amis(path text unique,title text default '',json text default '')")
   #app.mount("/amis/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__),'amis')), name="amis")
-
+  
   def amisLoad(title:str, json:str):
     from .amisTemplate import amisTemplate
     return amisTemplate.replace('{%title%}',title).replace('{%json%}',json).replace('{%CDN%}',"https://cdn.staticfile.org/amis/1.8.0")
   
-  if defaultPath!=None:
+  if password is not None:
+    @app.middleware("http")
+    async def amisCheck(request: Request, call_next):
+      if re.match('^/amis/',request.url.path) and not re.match('^/amis/get/',request.url.path) and request.cookies.get('amisPassword')!=password:
+        return JSONResponse({'msg':'Not admin!'},403)
+      response = await call_next(request)
+      return response
+  
+  if defaultPath is not None:
     @app.get('/')
     def root():
-      return RedirectResponse('/amis/get/'+defaultPath)
+      return RedirectResponse(os.path.join('/amis/get/',defaultPath))
   
   @app.get('/amis/getPath')
   def getPath():
