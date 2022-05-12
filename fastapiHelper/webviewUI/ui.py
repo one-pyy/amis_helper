@@ -16,8 +16,9 @@ def getIdlePort()->int:
       return port
   raise RuntimeError("No idle port found")
 
-def start_ui(app,title=uuid.uuid1()):
+def start_ui(app,title=None):
+  title=title or str(uuid.uuid1())
   port=getIdlePort()
   threading.Thread(target=uvicorn.run, args=(app,),kwargs={"host":"127.0.0.1","port":port}, daemon=True).start()
-  webview.create_window('Hello world', f'http://127.0.0.1:{port}')
+  webview.create_window(title, f'http://127.0.0.1:{port}')
   webview.start()
