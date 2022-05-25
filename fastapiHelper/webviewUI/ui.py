@@ -6,11 +6,14 @@ import socket
 import uuid
 
 def getIdlePort()->int:
-  for i in range(233333):
-    port=randint(5000,65535)
+  begin, end= 5000, 60000
+  sub=end-begin
+  base=randint(0, sub)
+  for i in range(0,sub):
+    port=(base+i)%sub+begin
     try:
       with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.settimeout(1)
+        s.settimeout(0.1)
         s.connect(('127.0.0.1',port))
     except Exception:
       return port
