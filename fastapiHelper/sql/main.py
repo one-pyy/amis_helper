@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import re, functools
 from ..config import SQL_url,echo
+import base64
 # echo=True表示引擎将用repr()函数记录所有语句及其参数列表到日志
 engine = create_engine(
   SQL_url, encoding='utf8', echo=echo
@@ -18,29 +19,47 @@ session = SessionLocal()
 # 创建基本映射类
 # SqlBase = declarative_base()
 
+
+
 def filter(input, fuzzy=False)->str:
   if input in [True,False]:
-    return " ".join(['',str(input),''])
+    return "".join([' ',str(input),' '])
   elif input is None:
     return ' null '
+  elif isinstance(input,bytes):
+    return "".join([" '",base64.b85encode(input).decode(),"' "])
   ans=str(input)
   if fuzzy:
     ans="".join(['%',ans,'%'])
   return "".join([" ('",ans.replace("'","''"),"') "])
 
-def get(sentence:str, *args)-> List[Tuple]:
-  func={'??':filter,'?l?':functools.partial(filter,fuzzy=True)}
-  ls=re.split('(\\?\\?|\\?l\\?)',sentence)
+def tableFilter(input)->str:
+  return "".join([' `',str(input).replace('`','``'),'` '])
+
+def _replace(sentence:str, *args)-> str:
+  func={
+    '??':filter,
+    '?l?':functools.partial(filter,fuzzy=True),
+    '?t?':tableFilter
+    }
+  ls=re.split('(\\?.*?\\?)',sentence)
   for i in range(1,len(ls),2):
     ls[i]=func[ls[i]](args[i//2])
-  return session.execute(''.join(ls)).all()
+  return ''.join(ls)
 
-def getListDict(queryFor:str, from_where_:str, *args)-> List[Dict[str,Any]]:
+def get(sentence:str, *args, bytesIndex:List[int]=[])-> List[Tuple]:
+  ret=session.execute(_replace(sentence,*args)).all()
+  for index in bytesIndex:
+    for row in ret:
+      row[index]=base64.b85decode(row[index])
+  return ret
+
+def getListDict(queryFor:str, from____:str, *args, bytesIndex:List[int]=[])-> List[Dict[str,Any]]:
   """
-  from_where_: 从from后开始的句子。
+  from____: 从from后开始的句子。
   query for: select 后 from 前的句子, 支持别名。
   """
-  ans=get(f'select {queryFor} from {from_where_}',*args)
+  ans=get(f'select {queryFor} from {from____}',*args, bytesIndex=bytesIndex)
   keys=[each.split(' ').pop() for each in queryFor.split(',')]
   return [{key:each[i] for i,key in enumerate(keys)} for each in ans]
 
@@ -49,12 +68,8 @@ def getListDict(queryFor:str, from_where_:str, *args)-> List[Dict[str,Any]]:
 #   return [cls.parse_obj(dic) for dic in ls]
 
 def set(sentence:str, *args, **kwargs)-> bool:
-  func={'??':filter,'?l?':functools.partial(filter,fuzzy=True)}
-  ls=re.split('(\\?\\?|\\?l\\?)',sentence)
-  for i in range(1,len(ls),2):
-    ls[i]=func[ls[i]](args[i//2])
   try:
-    session.execute(''.join(ls))
+    session.execute(_replace(sentence,*args))
     return True
   except Exception as e:
     if 'echo' not in kwargs.keys() or kwargs['echo']==True:

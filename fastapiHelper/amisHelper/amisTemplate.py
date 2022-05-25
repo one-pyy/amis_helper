@@ -35,9 +35,9 @@ amisTemplate="""
 <script type="text/javascript">
 (function () {
   let amis = amisRequire('amis/embed');
+  let amisLib = amisRequire('amis');
   // 通过替换下面这个配置来生成不同页面
-  let amisJSON = 
-  {%json%};
+  let amisJSON = {%json%};
   let amisScoped = amis.embed('#root', amisJSON);
 })();
 </script>
@@ -72,10 +72,11 @@ setAmis="amis页面增删改查","""
             "method": "post",
             "url": "/amis/updatePath",
             "data": {
-              "origin": "${value.label}",
+              "origin": "${value}",
               "replace_as": "${label}"
             },
-            "dataType": "json"
+            "dataType": "json",
+            "requestAdaptor": ""
           },
           "checkAll": false,
           "multiple": false,
@@ -84,7 +85,7 @@ setAmis="amis页面增删改查","""
             "method": "post",
             "url": "/amis/deletePath",
             "data": {
-              "path": "${value.label}"
+              "path": "${value}"
             },
             "dataType": "json"
           },
@@ -102,6 +103,10 @@ setAmis="amis页面增删改查","""
             },
             "dataType": "json"
           },
+          "autoFill": {
+            "title": "${paths[label].title}",
+            "json": "${paths[label].json}"
+          },
           "addControls": {
             "type": "dialog",
             "body": [
@@ -116,10 +121,6 @@ setAmis="amis页面增删改查","""
             "closeOnEsc": true,
             "closeOnOutside": true,
             "showCloseButton": true
-          },
-          "autoFill": {
-            "title": "${paths[label].title}",
-            "json": "${paths[label].json}"
           }
         },
         {
@@ -136,16 +137,16 @@ setAmis="amis页面增删改查","""
           "showCounter": false
         },
         {
-          "type": "textarea",
+          "type": "editor",
           "label": "JSON",
           "name": "json",
-          "id": "u:91fb33bd368a",
+          "id": "u:ac9f93e6e14e",
+          "size": "xl",
           "required": true,
-          "minRows": 22,
-          "maxRows": 22,
-          "minLength": 0,
-          "maxLength": 1000000000,
-          "showCounter": false
+          "options": {
+            "tabSize": 2
+          },
+          "language": "json"
         }
       ],
       "api": {

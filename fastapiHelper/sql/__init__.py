@@ -1,2 +1,2 @@
-from .main import get,set
-__all__=['get','set']
+from .main import get,set,getListDict
+__all__=['get','set','getListDict']
