@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from .. import sql
 import os
+import functools
 
 __all__ = ["startAmis"]
 
@@ -67,16 +68,18 @@ def startAmis(app:FastAPI, defaultPath=None, password=None):
   @api.post('/set')
   def setAmis(path:str=Body(...), title:str=Body(...), json:str=Body(...)):
     if sql.set("insert into amis values(??,??,??)",path,title,json, echo=False) or sql.set("update amis set title=??,json=?? where path=??",title,json,path, echo=False):
+      getAmis.cache_clear()
       return Response(status_code=201)
     else:
       return Response(status_code=422)
   
-  @api.get('/get/{path:path}')
+  @functools.lru_cache(maxsize=None)
   def getAmis(path:str=Path(...)):
     context=sql.get("select title,json from amis where path=??",path)
     if context.__len__()==0:
       return Response(status_code=404)
     return HTMLResponse(amisLoad(context[0][0],context[0][1]))
+  api.get('/get/{path:path}')(getAmis)
 
   @api.get("/set")
   def setAmisHTML():

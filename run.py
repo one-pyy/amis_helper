@@ -2,7 +2,7 @@ from fastapiHelper import start_ui
 import uvicorn
 from app import app
 
-runGUI=True
+runGUI=False
 
 if __name__ == '__main__':
   if runGUI:
