@@ -46,28 +46,28 @@ def startAmis(app:FastAPI, defaultPath=None, password=None):
     
   @api.post('/newPath')
   def newPath(path:str=Body(...,embed=True)):
-    if sql.set("insert into amis(path) values(??)",path):
+    if sql.set("insert into amis(path) values(??)",path, echo=True):
       return Response(status_code=201)
     else:
       return Response(status_code=422)
 
   @api.post('/updatePath')
   def updatePath(origin:str=Body(...), replace_as:str=Body(...)):
-    if sql.set("update amis set path=?? where path=??",replace_as,origin):
+    if sql.set("update amis set path=?? where path=??",replace_as,origin, echo=True):
       return Response(status_code=201)
     else:
       return Response(status_code=422)
 
   @api.post('/deletePath')
   def deletePath(path:str=Body(...,embed=True)):
-    if sql.set("delete from amis where path=??",path):
+    if sql.set("delete from amis where path=??",path, echo=True):
       return Response(status_code=204)
     else:
       return Response(status_code=422)
 
   @api.post('/set')
   def setAmis(path:str=Body(...), title:str=Body(...), json:str=Body(...)):
-    if sql.set("insert into amis values(??,??,??)",path,title,json, echo=False) or sql.set("update amis set title=??,json=?? where path=??",title,json,path, echo=False):
+    if sql.set("insert into amis values(??,??,??)",path,title,json, echo=False) or sql.set("update amis set title=??,json=?? where path=??",title,json,path, echo=True):
       getAmis.cache_clear()
       return Response(status_code=201)
     else:

@@ -4,7 +4,7 @@ port=8080
 if __name__ == '__main__':
   if runGUI:
     from app import app
-    from fastapiHelper import start_ui
+    from amisHelper import start_ui
     start_ui(app)
   else:
     import uvicorn

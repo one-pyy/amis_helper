@@ -78,7 +78,7 @@ def getDict(sentence:str, *args)-> List[Dict[str,Any]]:
 
 def set(sentence:str, *args, echo: bool=False)-> bool:
   try:
-    session.execute(_sqlExec(sentence,*args))
+    _sqlExec(sentence,*args)
     return True
   except Exception as e:
     if echo==True:
