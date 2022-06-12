@@ -1,2 +1,2 @@
-from .main import get,set,getListDict
-__all__=['get','set','getListDict']
+from .main import get, set, getDict, getOne, getRow, mulReplace
+__all__=['get','set','getDict','getOne', 'getRow', 'mulReplace']

@@ -76,10 +76,6 @@ def exist(sentence:str, *args)-> bool:
 def getDict(sentence:str, *args)-> List[Dict[str,Any]]:
   return [row._asdict() for row in get(sentence,*args)]  # type: ignore
 
-# def queryObj(cls:BaseModel, sentence, *args)->List[Any]:
-#   ls=queryList(sentence,*args)
-#   return [cls.parse_obj(dic) for dic in ls]
-
 def set(sentence:str, *args, echo: bool=False)-> bool:
   try:
     session.execute(_sqlExec(sentence,*args))
@@ -88,6 +84,3 @@ def set(sentence:str, *args, echo: bool=False)-> bool:
     if echo==True:
       traceback.print_exc()
     return False
-
-# if __name__ == '__main__':
-#   print(get("select * from user where a=?? and b like ?l?",True,'hello'))
