@@ -1,9 +1,11 @@
-from typing import List, Tuple, Any, Dict
+from typing import *
 from sqlalchemy import create_engine
+import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 import re, functools
 from ..config import SQL_url,echo
-import base64
+import traceback
+
 # echo=True表示引擎将用repr()函数记录所有语句及其参数列表到日志
 engine = create_engine(
   SQL_url, encoding='utf8', echo=echo
@@ -19,59 +21,73 @@ session = SessionLocal()
 # 创建基本映射类
 # SqlBase = declarative_base()
 
+def mulReplace(text:str, dic:Dict[str,str])->str:
+  def lbd(match):
+    return dic[match.group(0)]
+  return re.sub('|'.join(map(re.escape, dic)), lbd, text)
 
-
-def filter(input, fuzzy=False)->str:
-  if input in [True,False]:
+def filter(input, binds:Dict[str, Any], fuzzy:bool)->str:
+  if isinstance(input,bool):
     return "".join([' ',str(input),' '])
   elif input is None:
     return ' null '
   elif isinstance(input,bytes):
-    return "".join([" '",base64.b85encode(input).decode(),"' "])
+    index=len(binds)
+    binds[str(index)]=input
+    return f" (:{index}) "
   ans=str(input)
   if fuzzy:
     ans="".join(['%',ans,'%'])
   return "".join([" ('",ans.replace("'","''"),"') "])
 
-def tableFilter(input)->str:
+def tableFilter(input, _)->str:
   return "".join([' `',str(input).replace('`','``'),'` '])
 
-def _replace(sentence:str, *args)-> str:
-  func={
-    '??':filter,
-    '?l?':functools.partial(filter,fuzzy=True),
-    '?t?':tableFilter
+def _sqlExec(sentence:str, *args)->sqlalchemy.engine.CursorResult:
+  sentence=sentence.replace(":","\\:")
+  func: Dict[str, Callable[[Any, Dict[str,Any]],str]]={
+    '??': functools.partial(filter,fuzzy=False),
+    '?l?': functools.partial(filter,fuzzy=True),
+    '?t?': tableFilter
     }
-  ls=re.split('(\\?.*?\\?)',sentence)
+  binds:Dict[str,Any]={}
+  ls=re.split('(?<=[^\\\\])(\\?.*?\\?)',sentence)
   for i in range(1,len(ls),2):
-    ls[i]=func[ls[i]](args[i//2])
-  return ''.join(ls)
+    ls[i]=func[ls[i]](args[i//2], binds)
+  return session.execute("".join(ls),binds)
 
-def get(sentence:str, *args, bytesIndex:List[int]=[])-> List[Tuple]:
-  ret=session.execute(_replace(sentence,*args)).all()
-  for index in bytesIndex:
-    for row in ret:
-      row[index]=base64.b85decode(row[index])
+def get(sentence:str, *args)-> List[sqlalchemy.engine.Row]:
+  ret=_sqlExec(sentence,*args).all()
   return ret
 
-def getListDict(queryFor:str, from____:str, *args, bytesIndex:List[int]=[])-> List[Dict[str,Any]]:
-  """
-  from____: 从from后开始的句子。
-  query for: select 后 from 前的句子, 支持别名。
-  """
-  ans=get(f'select {queryFor} from {from____}',*args, bytesIndex=bytesIndex)
-  keys=[each.split(' ').pop() for each in queryFor.split(',')]
-  return [{key:each[i] for i,key in enumerate(keys)} for each in ans]
+def getRow(sentence:str, *args)-> Union[sqlalchemy.engine.Row,None]:
+  ret=_sqlExec(sentence,*args).first()
+  return ret
+
+def getOne(sentence:str, *args)-> Union[Any, None]:
+  ret=getRow(sentence,*args)
+  if ret is None:
+    return None
+  return ret[0]
+
+def exist(sentence:str, *args)-> bool:
+  return getRow(sentence,*args) is not None
+
+def getDict(sentence:str, *args)-> List[Dict[str,Any]]:
+  return [row._asdict() for row in get(sentence,*args)]  # type: ignore
 
 # def queryObj(cls:BaseModel, sentence, *args)->List[Any]:
 #   ls=queryList(sentence,*args)
 #   return [cls.parse_obj(dic) for dic in ls]
 
-def set(sentence:str, *args, **kwargs)-> bool:
+def set(sentence:str, *args, echo: bool=False)-> bool:
   try:
-    session.execute(_replace(sentence,*args))
+    session.execute(_sqlExec(sentence,*args))
     return True
   except Exception as e:
-    if 'echo' not in kwargs.keys() or kwargs['echo']==True:
-      print('\033[31m'+str(e)+'\033[0m')
+    if echo==True:
+      traceback.print_exc()
     return False
+
+# if __name__ == '__main__':
+#   print(get("select * from user where a=?? and b like ?l?",True,'hello'))
