@@ -1,6 +1,5 @@
-runGUI=False
-port=8080
-
+runGUI = False
+port = 8080
 if __name__ == '__main__':
   if runGUI:
     from app import app
@@ -10,4 +9,4 @@ if __name__ == '__main__':
     import uvicorn
     import os
     os.system(f"start http://127.0.0.1:{port}")
-    uvicorn.run("app:app",host="0.0.0.0",port=port,debug=True,reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=port, debug=True, reload=True)

@@ -1,5 +1,6 @@
 from amisHelper import startAmis
-from fastapi import FastAPI
+import fastapi as f
+from typing import *
 
-app=FastAPI()
+app=f.FastAPI()
 startAmis(app,"/amis/set")
