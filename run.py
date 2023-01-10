@@ -6,11 +6,11 @@ PORT: int = main_conf['port'] # type: ignore
 
 if __name__ == '__main__':
   if USE_GUI:
-    from app import app
+    from src.app import app
     from src.utils import start_GUI
     start_GUI(app)
   else:
     import uvicorn
     import os
     os.system(f"start http://127.0.0.1:{PORT}")
-    uvicorn.run("app:app", host="0.0.0.0", port=PORT, debug=True, reload=True)
+    uvicorn.run("src.app:app", host="0.0.0.0", port=PORT, debug=True, reload=True)
