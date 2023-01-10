@@ -1,0 +1,4 @@
+{
+  "sqlite": "sqlite:///sql.db",
+  "mysql": "mysql+aiomysql://127.0.0.1:3306/fastapi_mod?user=root&password=???"
+}

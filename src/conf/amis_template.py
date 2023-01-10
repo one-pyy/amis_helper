@@ -1,4 +1,4 @@
-amisTemplate="""
+AMIS_TEMPLATE="""
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -45,7 +45,7 @@ amisTemplate="""
 </html>
 """
 
-setAmis="amis页面增删改查","""
+SET_AMIS="amis页面增删改查", """
 {
   "type": "page",
   "title": "",
@@ -63,14 +63,14 @@ setAmis="amis页面增删改查","""
           "id": "u:8722b967366f",
           "required": true,
           "clearable": false,
-          "source": "get:/amis/getPath",
+          "source": "get:/amis/path",
           "editable": true,
           "creatable": true,
           "removable": true,
           "createBtnLabel": "新增路径",
           "editApi": {
-            "method": "post",
-            "url": "/amis/updatePath",
+            "method": "patch",
+            "url": "/amis/path",
             "data": {
               "origin": "${value}",
               "replace_as": "${label}"
@@ -82,8 +82,8 @@ setAmis="amis页面增删改查","""
           "multiple": false,
           "joinValues": true,
           "deleteApi": {
-            "method": "post",
-            "url": "/amis/deletePath",
+            "method": "delete",
+            "url": "/amis/path",
             "data": {
               "path": "${value}"
             },
@@ -97,7 +97,7 @@ setAmis="amis页面增删改查","""
           },
           "addApi": {
             "method": "post",
-            "url": "/amis/newPath",
+            "url": "/amis/path",
             "data": {
               "path": "${label}"
             },
@@ -151,7 +151,7 @@ setAmis="amis页面增删改查","""
       ],
       "api": {
         "method": "post",
-        "url": "/amis/set",
+        "url": "/amis/set_pages",
         "data": null,
         "dataType": "json",
         "replaceData": false
@@ -162,7 +162,7 @@ setAmis="amis页面增删改查","""
       "persistData": false,
       "debug": false,
       "checkAll": false,
-      "initApi": "/amis/getAll",
+      "initApi": "/amis/all_pages",
       "actions": [
         {
           "type": "submit",
