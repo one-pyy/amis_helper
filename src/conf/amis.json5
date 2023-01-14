@@ -1,5 +1,4 @@
 {
   cdn: "https://fastly.jsdelivr.net/npm/amis@2.6.0/sdk",
-  password: "",// 进入amis编辑器的密码, 记得改(如果不为空, 则cookie要带amis_pass)
-  index_path: "/amis/set_pages"
+  password: "",// 进入amis编辑器的密码(如果不为空, 则cookie要带amis_pass)
 }
