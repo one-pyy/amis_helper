@@ -1,1 +1,1 @@
-from .response import ResAmis
+from .response import AmisRes, AmisExp

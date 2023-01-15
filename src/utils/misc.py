@@ -43,6 +43,6 @@ def run_sync(async_func: Union[Awaitable, Iterable[Awaitable]]):
   return loop.run_until_complete(async_func)
 
 
-def patch_asyncio():
+def patch_asyncio_event_loop():
   import nest_asyncio
   nest_asyncio.apply()

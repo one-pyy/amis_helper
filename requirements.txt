@@ -1,4 +1,4 @@
 fastapi
 # pywebview
-SQLAlchemy==2.0.0rc1
+SQLAlchemy==2.0.0rc2
 uvicorn

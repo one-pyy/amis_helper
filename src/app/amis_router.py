@@ -11,7 +11,7 @@ from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..conf import AMIS_TEMPLATE, SET_AMIS, read_conf
-from ..model import ResAmis
+from ..model import AmisRes
 from ..sql import Amis, commit, db_sess, flush, get_session
 from ..utils import run_sync
 
@@ -60,9 +60,9 @@ async def create_path(path: str = Body(..., embed=True),
                     sess: AsyncSession = Depends(db_sess)):
   sess.add(Amis(path=path))
   if await commit(catch_regex=r"\(1062,"):
-    return ResAmis(msg="创建成功")
+    return AmisRes(msg="创建成功")
   else:
-    return ResAmis(status=1, msg="路径重复")
+    return AmisRes(status=1, msg="路径重复")
 
 @amis_admin.patch('/path')
 async def update_path(origin: str = Body(...), replace_as: str = Body(...), 
@@ -70,9 +70,9 @@ async def update_path(origin: str = Body(...), replace_as: str = Body(...),
   await sess.execute(
     update(Amis).where(Amis.path==origin).values(path=replace_as))
   if await commit(catch_regex=r"\(1062,"):
-    return ResAmis(msg="修改成功")
+    return AmisRes(msg="修改成功")
   else:
-    return ResAmis(status=1, msg="路径重复")
+    return AmisRes(status=1, msg="路径重复")
 
 @amis_admin.delete('/path')
 async def delete_path(path: str = Body(..., embed=True), 
@@ -81,7 +81,7 @@ async def delete_path(path: str = Body(..., embed=True),
     delete(Amis).where(Amis.path==path))
   await commit(echo=True)
   pages.pop(path, None)
-  return ResAmis(msg = "删除成功")
+  return AmisRes(msg = "删除成功")
 
 @amis_admin.post('/set_pages')
 async def set_amis(path: str = Body(...), title: str = Body(...), json: str = Body(...),
@@ -95,9 +95,9 @@ async def set_amis(path: str = Body(...), title: str = Body(...), json: str = Bo
     sess.add(Amis(path=path, title=title, json=json))
   if await commit(echo=True):
     pages[path] = make_amis_page(title, json)
-    return ResAmis(msg="保存成功")
+    return AmisRes(msg="保存成功")
   else:
-    return ResAmis(status=1, msg="未知错误")
+    return AmisRes(status=1, msg="未知错误")
 
 @amis.get('/pages/{path:path}')
 async def get_amis_page(path: str = Path(...)):
