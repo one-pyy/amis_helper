@@ -22,4 +22,3 @@ class Amis(Base):
   path: Mapped[str] = mapped_column(String(256), unique=True, index=True)
   title: Mapped[str] = mapped_column(String(1024), nullable=True)
   json: Mapped[str] = mapped_column(Text, nullable=True)
-  

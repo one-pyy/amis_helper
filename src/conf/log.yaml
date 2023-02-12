@@ -1,0 +1,32 @@
+version: 1
+formatters:
+  console:
+    format: "%(message)s"
+  file: 
+    format: "%(asctime)s [%(levelname)s] %(filename)s,%(lineno)d:%(funcName)s\n    %(message)s"
+handlers:
+  console:
+    class: rich.logging.RichHandler
+    level: INFO
+    formatter: console
+    rich_tracebacks: True
+    tracebacks_show_locals: True
+    log_time_format: "%m/%d %H:%M:%S"
+  file_debug:
+    class: logging.FileHandler
+    level: DEBUG
+    filename: "src/log/debug.log"
+    formatter: file
+  file_info:
+    class: logging.FileHandler
+    level: INFO
+    filename: "src/log/info.log"
+    formatter: file
+  file_warning:
+    class: logging.FileHandler
+    level: WARNING
+    filename: "src/log/warning.log"
+    formatter: file
+root:
+  level: NOTSET
+  handlers: [console, file_info, file_warning] #debug按需开启
