@@ -9,6 +9,8 @@ handlers:
     class: rich.logging.RichHandler
     level: INFO
     formatter: console
+    locals_max_string: Null
+    show_path: False # if you just use the log from uvicorn......
     rich_tracebacks: True
     tracebacks_show_locals: True
     log_time_format: "%m/%d %H:%M:%S"
@@ -29,4 +31,4 @@ handlers:
     formatter: file
 root:
   level: NOTSET
-  handlers: [console, file_info, file_warning] #debug按需开启
+  handlers: [console, file_info, file_warning] #debug when needed
