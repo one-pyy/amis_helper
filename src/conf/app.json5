@@ -1,3 +1,4 @@
 {
-  index_path: "/amis/set_pages"
+  index_path: "/amis/set_pages",
+  log_all: true
 }

@@ -10,6 +10,7 @@ handlers:
     level: INFO
     formatter: console
     locals_max_string: Null
+    markup: True
     show_path: False # if you just use the log from uvicorn......
     rich_tracebacks: True
     tracebacks_show_locals: True

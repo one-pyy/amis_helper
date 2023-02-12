@@ -13,4 +13,4 @@ if __name__ == '__main__':
     import uvicorn
     import os
     os.system(f"start http://127.0.0.1:{PORT}")
-    uvicorn.run("src.main_app:app", host="0.0.0.0", port=PORT, debug=True, reload=True, log_config="src/conf/log.yaml")
+    uvicorn.run("src.main_app:app", host="0.0.0.0", port=PORT, reload=True, log_config="src/conf/log.yaml")
