@@ -26,10 +26,11 @@ if LOG_ALL:
         f"\\[{request.method}] {request.url._url}",
         "\\[[bold orange1]Headers[/bold orange1]]",
         *[escape(f"    {k}: {v}") for k, v in request.headers.items() if k != 'cookie'],
-        "\\[[bold orange1]Cookies[/bold orange1]]",
-        *[escape(f"    {k}: {v}") for k, v in request.cookies.items()],
       ]
-      
+      if request.cookies:
+        log_content+=[
+          "\\[[bold orange1]Cookies[/bold orange1]]", 
+          *[escape(f"    {k}: {v}") for k, v in request.cookies.items()]]
       body = (await request.body()).decode(errors="xmlcharrefreplace")
       if body:
         log_content.append("\\[[bold orange1]Body[/bold orange1]]")
