@@ -1,4 +1,6 @@
-from src.conf import read_conf
+import os
+
+from src.conf import read_conf, ROOT_DIR
 
 main_conf = read_conf("main")
 USE_GUI: bool = main_conf['use_GUI'] # type: ignore
@@ -13,4 +15,5 @@ if __name__ == '__main__':
     import uvicorn
     import os
     os.system(f"start http://127.0.0.1:{PORT}")
+    (ROOT_DIR/"log").mkdir(exist_ok=True) # type: ignore
     uvicorn.run("src.main_app:app", host="0.0.0.0", port=PORT, reload=True, log_config="src/conf/log.yaml")
