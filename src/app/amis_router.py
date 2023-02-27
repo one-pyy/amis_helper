@@ -1,24 +1,26 @@
 from typing import *
 import os
+import asyncio as ai
 
-import regex as re
 from fastapi import Query, Body, Path, Cookie, Depends
-from fastapi import APIRouter, FastAPI, Request, Response
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi import APIRouter, Request, Response
 from fastapi import HTTPException
-from objprint import op
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+import httpx
 
-from ..conf import AMIS_TEMPLATE, SET_AMIS, read_conf
-from ..model import AmisRes
+from ..conf import AMIS_TEMPLATE, SET_AMIS, read_conf, ROOT_DIR
+from ..model import AmisRes, AmisExp
 from ..sql import Amis, commit, db_sess, flush, get_session
 from ..utils import run_sync
 
 
 CONF = read_conf("amis")
 AMIS_PASSWORD: str = CONF['password'] # type: ignore
-AMIS_TEMPLATE_WITH_CDN = AMIS_TEMPLATE.replace("{%CDN%}", CONF['cdn']) # type: ignore
+CDN: List[str] = CONF['cdn'] # type: ignore
+AMIS_TEMPLATE_WITH_SDK_PATH = AMIS_TEMPLATE.replace("{%sdk_path%}", CONF['sdk_path']) # type: ignore
 
 
 async def amis_check(amis_pass: str = Cookie("")):
@@ -29,9 +31,10 @@ amis = APIRouter(tags=["amis"])
 amis_admin = APIRouter(dependencies=[Depends(amis_check)])
 
 pages: Dict[str, HTMLResponse] = {}
+sdk: Dict[str, RedirectResponse] = {}
 
 def make_amis_page(title: str, json: str) -> HTMLResponse:
-  return HTMLResponse(AMIS_TEMPLATE_WITH_CDN
+  return HTMLResponse(AMIS_TEMPLATE_WITH_SDK_PATH
                       .replace("{%title%}", title)
                       .replace("{%json%}", json))
 
@@ -57,7 +60,7 @@ async def get_all_pages(sess: AsyncSession = Depends(db_sess)):
   
 @amis_admin.post('/path')
 async def create_path(path: str = Body(..., embed=True), 
-                    sess: AsyncSession = Depends(db_sess)):
+                      sess: AsyncSession = Depends(db_sess)):
   sess.add(Amis(path=path))
   if await commit(catch_regex=r"\(1062,"):
     return AmisRes(msg="创建成功")
@@ -84,8 +87,10 @@ async def delete_path(path: str = Body(..., embed=True),
   return AmisRes(msg = "删除成功")
 
 @amis_admin.post('/set_pages')
-async def set_amis(path: str = Body(...), title: str = Body(...), json: str = Body(...),
-                    sess: AsyncSession = Depends(db_sess)):
+async def set_amis(path: str = Body(...), 
+                   title: str = Body(...), 
+                   json: str = Body(...), 
+                   sess: AsyncSession = Depends(db_sess)):
   # 为了兼容其实并不存在的多种数据库, 就不用upsert了
   page = await sess.scalar(
     select(Amis).filter_by(path=path))
@@ -102,6 +107,27 @@ async def set_amis(path: str = Body(...), title: str = Body(...), json: str = Bo
 @amis.get('/pages/{path:path}')
 async def get_amis_page(path: str = Path(...)):
   return pages.get(path, Response(status_code=404))
+
+amis.mount("/sdk", StaticFiles(directory=ROOT_DIR/"amis_sdk"), name="amis_sdk")
+cli = httpx.AsyncClient(timeout=5)
+@amis.get('/sdk/{path:path}')
+async def get_js(path: str = Path(...)):
+  if path in sdk:
+    return sdk[path]
+  
+  # 没有这行的话应该也是没有洞的, 但谁知道呢
+  if ".." in path:
+    raise HTTPException(404)
+  
+  targets = [f"{url}/{path}" for url in CDN]
+  
+  ans: List[Union[httpx.Response, Exception]] = await ai.gather(
+    *(cli.get(target) for target in targets), return_exceptions=True)
+  for i, res in enumerate(ans):
+    if isinstance(res, httpx.Response) and res.status_code == 200:
+      sdk[path] = RedirectResponse(targets[i])
+      return sdk[path]
+  raise AmisExp(msg="我想, 大抵是出了什么问题, 找找管理员吧")
 
 @amis_admin.get("/set_pages")
 def set_amis_HTML_page():

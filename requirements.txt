@@ -4,3 +4,4 @@ SQLAlchemy==2.0.0rc2
 uvicorn
 rich
 pyyaml
+httpx

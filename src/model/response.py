@@ -7,12 +7,12 @@ class AmisRes(BaseModel):
   status: int = 0
   msg: str = ""
   msgTimeout: int = 5000
-  data: Union[None, BaseModel] = None
+  data: Any = None
 
 
 class AmisExp(Exception):
   """amis异常类"""
-  def __init__(self, status: int = 1, msg: str = "", msg_timeout: int = 5000, data: Union[None, BaseModel] = None):
+  def __init__(self, status: int = 1, msg: str = "", msg_timeout: int = 5000, data: Any = None):
     self.status = status
     self.msg = msg
     self.msg_timeout = msg_timeout
