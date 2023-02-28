@@ -11,7 +11,7 @@ from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 import httpx
 
-from ..conf import AMIS_TEMPLATE, SET_AMIS, read_conf, ROOT_DIR
+from ..conf import AMIS_TEMPLATE, SET_AMIS, read_conf, HEADERS
 from ..model import AmisRes, AmisExp
 from ..sql import Amis, commit, db_sess, flush, get_session
 from ..utils import run_sync
@@ -108,8 +108,7 @@ async def set_amis(path: str = Body(...),
 async def get_amis_page(path: str = Path(...)):
   return pages.get(path, Response(status_code=404))
 
-amis.mount("/sdk", StaticFiles(directory=ROOT_DIR/"amis_sdk"), name="amis_sdk")
-cli = httpx.AsyncClient(timeout=5)
+cli = httpx.AsyncClient(headers=HEADERS, timeout=5)
 @amis.get('/sdk/{path:path}')
 async def get_js(path: str = Path(...)):
   if path in sdk:
@@ -120,14 +119,14 @@ async def get_js(path: str = Path(...)):
     raise HTTPException(404)
   
   targets = [f"{url}/{path}" for url in CDN]
-  
   ans: List[Union[httpx.Response, Exception]] = await ai.gather(
     *(cli.get(target) for target in targets), return_exceptions=True)
   for i, res in enumerate(ans):
     if isinstance(res, httpx.Response) and res.status_code == 200:
       sdk[path] = RedirectResponse(targets[i])
       return sdk[path]
-  raise AmisExp(msg="我想, 大抵是出了什么问题, 找找管理员吧")
+  sdk[path] = RedirectResponse(f"/static/amis_sdk/{path}")
+  return sdk[path]
 
 @amis_admin.get("/set_pages")
 def set_amis_HTML_page():

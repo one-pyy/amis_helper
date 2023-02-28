@@ -53,12 +53,15 @@ from typing import *
 import logging
 
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, JSONResponse
 
 from .app import amis
 from .model import AmisExp, AmisRes
+from .conf import ROOT_DIR
 
 app = FastAPI()
+app.mount("/static/amis_sdk", StaticFiles(directory=ROOT_DIR/"amis_sdk"), name="amis_sdk")
 app.include_router(amis, prefix="/amis")
 
 if INDEX_PATH:
