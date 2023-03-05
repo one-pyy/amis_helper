@@ -1,7 +1,13 @@
-fastapi
 # pywebview
-SQLAlchemy==2.0.0rc2
+# sqlite
+# aiosqlite
+fastapi
+SQLAlchemy
 uvicorn
 rich
 pyyaml
 httpx
+regex
+json5
+objprint
+nest_asyncio
