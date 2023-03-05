@@ -20,6 +20,7 @@ from ..utils import run_sync
 CONF = read_conf("amis")
 AMIS_PASSWORD: str = CONF['password'] # type: ignore
 CDN: List[str] = CONF['cdn'] # type: ignore
+USE_LOCAL: bool = CONF['local'] # type: ignore
 AMIS_TEMPLATE_WITH_SDK_PATH = AMIS_TEMPLATE.replace("{%sdk_path%}", CONF['sdk_path']) # type: ignore
 
 
@@ -44,7 +45,9 @@ async def load_pages():
   for result in amis_results:
     pages[result.path] = make_amis_page(result.title, result.json)
 
-run_sync(load_pages())
+@amis.on_event("startup")
+async def init():
+  await load_pages()
 
 @amis_admin.get('/path')
 async def get_path(sess: AsyncSession = Depends(db_sess)):
@@ -115,16 +118,18 @@ async def get_js(path: str = Path(...)):
     return sdk[path]
   
   # 没有这行的话应该也是没有洞的, 但谁知道呢
-  if ".." in path:
-    raise HTTPException(404)
-  
-  targets = [f"{url}/{path}" for url in CDN]
-  ans: List[Union[httpx.Response, Exception]] = await ai.gather(
-    *(cli.get(target) for target in targets), return_exceptions=True)
-  for i, res in enumerate(ans):
-    if isinstance(res, httpx.Response) and res.status_code == 200:
-      sdk[path] = RedirectResponse(targets[i])
-      return sdk[path]
+  if not USE_LOCAL:
+    if ".." in path:
+      raise HTTPException(404)
+    
+    targets = [f"{url}/{path}" for url in CDN]
+    ans: List[Union[httpx.Response, Exception]] = await ai.gather(
+      *(cli.get(target) for target in targets), return_exceptions=True)
+    for i, res in enumerate(ans):
+      if isinstance(res, httpx.Response) and res.status_code == 200:
+        sdk[path] = RedirectResponse(targets[i])
+        return sdk[path]
+    
   sdk[path] = RedirectResponse(f"/static/amis_sdk/{path}")
   return sdk[path]
 
