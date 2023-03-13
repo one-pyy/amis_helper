@@ -16,4 +16,10 @@ if __name__ == '__main__':
     import os
     os.system(f"start http://127.0.0.1:{PORT}")
     (ROOT_DIR/"log").mkdir(exist_ok=True) # type: ignore
-    uvicorn.run("src.main_app:app", host="0.0.0.0", port=PORT, reload=True, log_config="src/conf/log.yaml")
+    uvicorn.run(
+      "src.main_app:app", 
+      host="0.0.0.0", 
+      port=PORT, 
+      reload=True, 
+      log_config="src/conf/log.yaml"
+    )

@@ -40,14 +40,10 @@ def make_amis_page(title: str, json: str) -> HTMLResponse:
                       .replace("{%json%}", json))
 
 async def load_pages():
-  sess = get_session()
-  amis_results = await sess.scalars(select(Amis))
-  for result in amis_results:
-    pages[result.path] = make_amis_page(result.title, result.json)
-
-@amis.on_event("startup")
-async def init():
-  await load_pages()
+  async with get_session() as sess:
+    amis_results = await sess.scalars(select(Amis))
+    for result in amis_results:
+      pages[result.path] = make_amis_page(result.title, result.json)
 
 @amis_admin.get('/path')
 async def get_path(sess: AsyncSession = Depends(db_sess)):
@@ -66,9 +62,9 @@ async def create_path(path: str = Body(..., embed=True),
                       sess: AsyncSession = Depends(db_sess)):
   sess.add(Amis(path=path))
   if await commit(catch_regex=r"\(1062,"):
-    return AmisRes(msg="创建成功")
+    return AmisRes("创建成功")
   else:
-    return AmisRes(status=1, msg="路径重复")
+    raise AmisExp("路径重复")
 
 @amis_admin.patch('/path')
 async def update_path(origin: str = Body(...), replace_as: str = Body(...), 
@@ -76,9 +72,9 @@ async def update_path(origin: str = Body(...), replace_as: str = Body(...),
   await sess.execute(
     update(Amis).where(Amis.path==origin).values(path=replace_as))
   if await commit(catch_regex=r"\(1062,"):
-    return AmisRes(msg="修改成功")
+    return AmisRes("修改成功")
   else:
-    return AmisRes(status=1, msg="路径重复")
+    raise AmisExp("路径重复")
 
 @amis_admin.delete('/path')
 async def delete_path(path: str = Body(..., embed=True), 
@@ -87,7 +83,7 @@ async def delete_path(path: str = Body(..., embed=True),
     delete(Amis).where(Amis.path==path))
   await commit(echo=True)
   pages.pop(path, None)
-  return AmisRes(msg = "删除成功")
+  return AmisRes("删除成功")
 
 @amis_admin.post('/set_pages')
 async def set_amis(path: str = Body(...), 
@@ -103,9 +99,9 @@ async def set_amis(path: str = Body(...),
     sess.add(Amis(path=path, title=title, json=json))
   if await commit(echo=True):
     pages[path] = make_amis_page(title, json)
-    return AmisRes(msg="保存成功")
+    return AmisRes("保存成功")
   else:
-    return AmisRes(status=1, msg="未知错误")
+    raise AmisExp("保存失败")
 
 @amis.get('/pages/{path:path}')
 async def get_amis_page(path: str = Path(...)):

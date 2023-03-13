@@ -11,7 +11,7 @@ from ..conf import get_sql_url
 from ..utils import kwargs_to_dict
 
 
-async_scoped_session = ContextVar('async_scoped_session', default=None)
+async_scoped_session: ContextVar[Optional[AsyncSession]] = ContextVar('async_scoped_session', default=None)
 
 engine=create_async_engine(get_sql_url(), echo=False, future=True)
 SessionMaker = async_sessionmaker(bind=engine, class_=AsyncSession, future=True, expire_on_commit=False)
@@ -106,6 +106,10 @@ async def create_all_tables(drop_exist = False):
     if drop_exist:
       await conn.run_sync(Base.metadata.drop_all)
     await conn.run_sync(Base.metadata.create_all)
+  await engine.dispose()
+
+
+async def close_engine():
   await engine.dispose()
 
 
