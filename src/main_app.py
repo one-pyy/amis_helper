@@ -19,15 +19,17 @@ patch_asyncio_event_loop()
 APP_CONF = read_conf("app")
 INDEX_PATH: str = os.path.join('/amis/pages/', APP_CONF['index_path']) # type: ignore
 LOG_OPTIONS: dict = APP_CONF['log'] # type: ignore
+DEBUG: bool = APP_CONF['debug'] # type: ignore
 
 # 很不幸, 似乎get_route_handler要放在注册api的前面...
 # 之前就吐槽过ejs, 没想到fastapi也这样, 无语耶
 # 于是就有了这个猴子补丁
+# 另外
 if LOG_OPTIONS['log_all']:
-  add_log_for_all(LOG_OPTIONS['ignore_headers'])
+  add_log_for_all(LOG_OPTIONS['ignore_headers'], LOG_OPTIONS['ignore_exps'])
 
 app = FastAPI()
-app.debug = True
+app.debug = DEBUG
 
 @app.on_event("startup")
 async def start():

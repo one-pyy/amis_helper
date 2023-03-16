@@ -20,5 +20,5 @@ class Amis(Base):
   __mapper_args__ = {"eager_defaults": True}
   id: Mapped[int] = mapped_column(primary_key=True)
   path: Mapped[str] = mapped_column(String(256), unique=True, index=True)
-  title: Mapped[str] = mapped_column(String(1024), nullable=True)
-  json: Mapped[str] = mapped_column(Text, nullable=True)
+  title: Mapped[str] = mapped_column(String(1024), default="")
+  json: Mapped[str] = mapped_column(Text, default="")

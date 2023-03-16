@@ -14,7 +14,6 @@ import httpx
 from ..conf import AMIS_TEMPLATE, SET_AMIS, read_conf, HEADERS
 from ..model import AmisRes, AmisExp
 from ..sql import Amis, commit, db_sess, flush, get_session
-from ..utils import run_sync
 
 
 CONF = read_conf("amis")
@@ -132,5 +131,9 @@ async def get_js(path: str = Path(...)):
 @amis_admin.get("/set_pages")
 def set_amis_HTML_page():
   return make_amis_page(*SET_AMIS)
+
+@amis.get("/test")
+def test():
+  raise ValueError()
 
 amis.include_router(amis_admin)

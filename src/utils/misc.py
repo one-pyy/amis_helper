@@ -1,5 +1,3 @@
-import copy
-import inspect
 import sys
 import random
 from typing import *
@@ -48,13 +46,21 @@ def patch_asyncio_event_loop():
   nest_asyncio.apply()
 
 
-def add_log_for_all(ignore_headers: List[str]):
+def add_log_for_all(ignore_headers: List[str], ignore_exps: List[str]):
   import logging
-  import traceback
+  import re
+  try:
+    import pretty_errors
+    print_exc = lambda: pretty_errors.excepthook(*sys.exc_info())
+  except:
+    import traceback
+    print_exc = lambda: traceback.print_exc()
   
   from fastapi.routing import APIRoute
   from fastapi import Request
   from rich.markup import escape
+  
+  exp_pattern = re.compile(rf"^.*({'|'.join(ignore_exps)}).*$")
   
   def wrap_color(target: str, color: str = "orange1"):
     return f"\\[[bold {color}]{target}[/bold {color}]]"
@@ -82,8 +88,16 @@ def add_log_for_all(ignore_headers: List[str]):
         log_content.append(escape(body if len(body) < 1000 else body[:1000] + f"...[{len(body)}]"))
       
       logging.info("\n".join(log_content))
-      return await origin_get_route_handler(self)(request)
+      try:
+        return await origin_get_route_handler(self)(request)
+      except Exception as e:
+        if not re.match(exp_pattern, str(e)):
+          print_exc()
+          logging.error(f"Error in [{request.url._url}]: {e}")
+        raise 
     
     return log_all
   
   APIRoute.get_route_handler = get_route_handler
+
+
