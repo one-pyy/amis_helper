@@ -46,7 +46,7 @@ def patch_asyncio_event_loop():
   nest_asyncio.apply()
 
 
-def add_log_for_all(ignore_headers: List[str], ignore_exps: List[str]):
+def add_log_for_all(ignore_headers: List[str]):
   import logging
   import re
   try:
@@ -60,8 +60,6 @@ def add_log_for_all(ignore_headers: List[str], ignore_exps: List[str]):
   from fastapi import Request
   from rich.markup import escape
   
-  exp_pattern = re.compile(rf"^.*({'|'.join(ignore_exps)}).*$")
-  
   def wrap_color(target: str, color: str = "orange1"):
     return f"\\[[bold {color}]{target}[/bold {color}]]"
   
@@ -70,6 +68,7 @@ def add_log_for_all(ignore_headers: List[str], ignore_exps: List[str]):
     async def log_all(request: Request):
       ip = "unknown ip" if request.client is None else request.client.host
       log_content = [
+        "="*50,
         wrap_color("ip")+" "+ip,
         f"\\[{request.method}] {request.url._url}",
         wrap_color("Headers"),
@@ -88,13 +87,7 @@ def add_log_for_all(ignore_headers: List[str], ignore_exps: List[str]):
         log_content.append(escape(body if len(body) < 1000 else body[:1000] + f"...[{len(body)}]"))
       
       logging.info("\n".join(log_content))
-      try:
-        return await origin_get_route_handler(self)(request)
-      except Exception as e:
-        if not re.match(exp_pattern, str(e)):
-          print_exc()
-          logging.error(f"Error in [{request.url._url}]: {e}")
-        raise 
+      return await origin_get_route_handler(self)(request)
     
     return log_all
   

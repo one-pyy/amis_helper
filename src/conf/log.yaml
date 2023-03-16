@@ -1,4 +1,5 @@
 version: 1
+disable_existing_loggers: False # To get the traceback from uvicorn. see https://stackoverflow.com/questions/66602480/fastapi-uvicorn-not-logging-errors
 formatters:
   console:
     format: "%(message)s"
@@ -12,7 +13,7 @@ handlers:
     locals_max_string: Null
     markup: True
     show_path: False # if you just use the log from uvicorn......
-    rich_tracebacks: True
+    rich_tracebacks: True # will make the traceback very very very very very long...... but it is useful. use expection handler to avoid the traceback
     tracebacks_show_locals: True
     log_time_format: "%m/%d %H:%M:%S"
   file_debug:
@@ -32,4 +33,4 @@ handlers:
     formatter: file
 root:
   level: NOTSET
-  handlers: [console, file_info, file_warning] #debug when needed
+  handlers: [console, file_warning, file_info] #debug when needed

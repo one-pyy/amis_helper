@@ -4,9 +4,6 @@
     log_all: true,
     ignore_headers: [
       'host', 'connection', 'accept', 'user-agent', 'accept-encoding', 'accept-language', 'sec-ch-ua', 'sec-ch-ua-mobile', 'sec-ch-ua-platform', 'dnt', 'upgrade-insecure-requests', 'sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-user', 'sec-fetch-dest'
-    ],
-    ignore_exps: [ //使用正则匹配type
-      'AmisExp'
     ]
   },
   debug: true

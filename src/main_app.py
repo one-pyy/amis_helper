@@ -24,9 +24,9 @@ DEBUG: bool = APP_CONF['debug'] # type: ignore
 # 很不幸, 似乎get_route_handler要放在注册api的前面...
 # 之前就吐槽过ejs, 没想到fastapi也这样, 无语耶
 # 于是就有了这个猴子补丁
-# 另外
+# 另外还有一份exp名单
 if LOG_OPTIONS['log_all']:
-  add_log_for_all(LOG_OPTIONS['ignore_headers'], LOG_OPTIONS['ignore_exps'])
+  add_log_for_all(LOG_OPTIONS['ignore_headers'])
 
 app = FastAPI()
 app.debug = DEBUG
@@ -40,7 +40,8 @@ async def start():
 async def shut():
   await close_engine()
 
-app.mount("/static/amis_sdk", StaticFiles(directory=ROOT_DIR/"amis_sdk"), name="amis_sdk")
+app.mount("/static/amis_sdk", 
+          StaticFiles(directory=ROOT_DIR/"amis_sdk"), name="amis_sdk")
 app.include_router(amis, prefix="/amis")
 
 if INDEX_PATH:
@@ -49,6 +50,6 @@ if INDEX_PATH:
     return RedirectResponse(INDEX_PATH)
 
 @app.exception_handler(AmisExp)
-async def unicorn_exception_handler(request: Request, exc: AmisExp):
+async def amis_exp_handler(request: Request, exc: AmisExp):
   amis_res = AmisRes(exc.msg, exc.data, exc.status, exc.msg_timeout)
   return JSONResponse(amis_res.dict())

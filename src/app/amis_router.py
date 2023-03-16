@@ -132,8 +132,5 @@ async def get_js(path: str = Path(...)):
 def set_amis_HTML_page():
   return make_amis_page(*SET_AMIS)
 
-@amis.get("/test")
-def test():
-  raise ValueError()
 
 amis.include_router(amis_admin)
