@@ -2,3 +2,4 @@
 sql.db
 **/amis_sdk/**
 /.history
+**/log

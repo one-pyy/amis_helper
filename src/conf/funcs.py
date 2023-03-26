@@ -1,4 +1,4 @@
-from pathlib2 import Path
+from pathlib import Path
 import sys
 from typing import *
 

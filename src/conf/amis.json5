@@ -1,6 +1,4 @@
 {
-  sdk_path: "/amis/sdk",
-  local: true, // 是否使用本地的sdk, 如果为false则使用cdn, 如果为true则使用本地的sdk, 本地的sdk需要自行下载后放在amis_sdk目录下
   cdn: [ // 这里最后不要写斜杠, 优先级按照顺序依次降低, 如果都访问不了则使用本地的(自行下载后放在amis_sdk目录下)
     "https://cdnjs.loli.net/ajax/libs/amis/2.7.2", 
     "https://libs.jshub.com/amis/2.7.2",

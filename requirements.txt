@@ -1,6 +1,5 @@
 # pywebview
-# sqlite
-# aiosqlite
+aiosqlite
 fastapi
 SQLAlchemy
 uvicorn

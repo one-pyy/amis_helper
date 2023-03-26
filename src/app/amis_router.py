@@ -1,6 +1,7 @@
 from typing import *
 import os
 import asyncio as ai
+import pathlib
 
 from fastapi import Query, Body, Path, Cookie, Depends
 from fastapi import APIRouter, Request, Response
@@ -16,11 +17,10 @@ from ..model import AmisRes, AmisExp
 from ..sql import Amis, commit, db_sess, flush, get_session
 
 
-CONF = read_conf("amis")
-AMIS_PASSWORD: str = CONF['password'] # type: ignore
-CDN: List[str] = CONF['cdn'] # type: ignore
-USE_LOCAL: bool = CONF['local'] # type: ignore
-AMIS_TEMPLATE_WITH_SDK_PATH = AMIS_TEMPLATE.replace("{%sdk_path%}", CONF['sdk_path']) # type: ignore
+AMIS_CONF = read_conf("amis")
+AMIS_PASSWORD: str = AMIS_CONF['password'] # type: ignore
+CDN: List[str] = AMIS_CONF['cdn'] # type: ignore
+AMIS_TEMPLATE_WITH_SDK = AMIS_TEMPLATE.replace("{%sdk_path%}", "/amis/sdk") # type: ignore
 
 
 async def amis_check(amis_pass: str = Cookie("")):
@@ -34,7 +34,7 @@ pages: Dict[str, HTMLResponse] = {}
 sdk: Dict[str, RedirectResponse] = {}
 
 def make_amis_page(title: str, json: str) -> HTMLResponse:
-  return HTMLResponse(AMIS_TEMPLATE_WITH_SDK_PATH
+  return HTMLResponse(AMIS_TEMPLATE_WITH_SDK
                       .replace("{%title%}", title)
                       .replace("{%json%}", json))
 
@@ -43,6 +43,21 @@ async def load_pages():
     amis_results = await sess.scalars(select(Amis))
     for result in amis_results:
       pages[result.path] = make_amis_page(result.title, result.json)
+
+async def generate_sdk():
+  cli = httpx.AsyncClient(headers=HEADERS, timeout=5)
+  async def choose_CDN(path: pathlib.Path):
+    targets = [f"{url}/{path}" for url in CDN]
+    ans: List[Union[httpx.Response, Exception]] = await ai.gather(
+      *(cli.get(target) for target in targets), return_exceptions=True)
+    for i, res in enumerate(ans):
+      if isinstance(res, httpx.Response) and res.status_code == 200:
+        sdk[str(path)] = RedirectResponse(targets[i])
+  
+  sdk_path = pathlib.Path("src/amis_sdk")
+  paths = [path.relative_to(sdk_path) for path in sdk_path.glob("**/*")]
+  await ai.gather(
+    *(choose_CDN(path) for path in paths if path.is_file()))
 
 @amis_admin.get('/path')
 async def get_path(sess: AsyncSession = Depends(db_sess)):
@@ -106,27 +121,9 @@ async def set_amis(path: str = Body(...),
 async def get_amis_page(path: str = Path(...)):
   return pages.get(path, Response(status_code=404))
 
-cli = httpx.AsyncClient(headers=HEADERS, timeout=5)
 @amis.get('/sdk/{path:path}')
 async def get_js(path: str = Path(...)):
-  if path in sdk:
-    return sdk[path]
-  
-  # 没有这行的话应该也是没有洞的, 但谁知道呢
-  if not USE_LOCAL:
-    if ".." in path:
-      raise HTTPException(404)
-    
-    targets = [f"{url}/{path}" for url in CDN]
-    ans: List[Union[httpx.Response, Exception]] = await ai.gather(
-      *(cli.get(target) for target in targets), return_exceptions=True)
-    for i, res in enumerate(ans):
-      if isinstance(res, httpx.Response) and res.status_code == 200:
-        sdk[path] = RedirectResponse(targets[i])
-        return sdk[path]
-    
-  sdk[path] = RedirectResponse(f"/static/amis_sdk/{path}")
-  return sdk[path]
+  return sdk.get(path, RedirectResponse(f"/static/amis_sdk/{path}"))
 
 @amis_admin.get("/set_pages")
 def set_amis_HTML_page():

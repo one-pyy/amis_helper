@@ -19,16 +19,19 @@ handlers:
   file_debug:
     class: logging.FileHandler
     level: DEBUG
+    encoding: utf-8
     filename: "src/log/debug.log"
     formatter: file
   file_info:
     class: logging.FileHandler
     level: INFO
+    encoding: utf-8
     filename: "src/log/info.log"
     formatter: file
   file_warning:
     class: logging.FileHandler
     level: WARNING
+    encoding: utf-8
     filename: "src/log/warning.log"
     formatter: file
 root:
