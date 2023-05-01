@@ -28,8 +28,9 @@ DEBUG: bool = APP_CONF['debug'] # type: ignore
 if LOG_OPTIONS['log_all']:
   add_log_for_all(LOG_OPTIONS['ignore_headers'])
 
-app = FastAPI()
-app.debug = DEBUG
+app = FastAPI(docs_url="/docs" if DEBUG else None, 
+              redoc_url="/redoc" if DEBUG else None,
+              debug=DEBUG)
 
 @app.on_event("startup")
 async def start():

@@ -81,7 +81,7 @@ def add_log_for_all(ignore_headers: List[str]):
         log_content+=[
           wrap_color("Cookies"),
           *[escape(f"    {k}: {v}") for k, v in request.cookies.items()]]
-      body = (await request.body()).decode(errors="xmlcharrefreplace")
+      body = (await request.body()).decode(errors="backslashreplace")
       if body:
         log_content.append(wrap_color("Body"))
         log_content.append(escape(body if len(body) < 1000 else body[:1000] + f"...[{len(body)}]"))
