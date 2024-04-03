@@ -45,152 +45,214 @@ AMIS_TEMPLATE="""
 </html>
 """
 
-SET_AMIS="amis页面增删改查", """
+SET_AMIS="amis页面增删改查", r"""
 {
-  "type": "page",
-  "title": "",
-  "body": [
+  "type": "tabs",
+  "id": "u:6b9ae22bcb9e",
+  "tabs": [
     {
-      "type": "form",
       "title": "amis页面增删改查",
       "body": [
         {
-          "type": "select",
-          "label": "路径",
-          "name": "path",
-          "options": [
-          ],
-          "id": "u:8722b967366f",
-          "required": true,
-          "clearable": false,
-          "source": "get:/amis/path",
-          "editable": true,
-          "creatable": true,
-          "removable": true,
-          "createBtnLabel": "新增路径",
-          "editApi": {
-            "method": "patch",
-            "url": "/amis/path",
-            "data": {
-              "origin": "${value}",
-              "replace_as": "${label}"
-            },
-            "dataType": "json",
-            "requestAdaptor": ""
-          },
-          "checkAll": false,
-          "multiple": false,
-          "joinValues": true,
-          "deleteApi": {
-            "method": "delete",
-            "url": "/amis/path",
-            "data": {
-              "path": "${value}"
-            },
-            "dataType": "json"
-          },
-          "submitOnChange": false,
-          "validateApi": "",
-          "validateOnChange": true,
-          "autoComplete": "",
-          "validationErrors": {
-          },
-          "addApi": {
-            "method": "post",
-            "url": "/amis/path",
-            "data": {
-              "path": "${label}"
-            },
-            "dataType": "json"
-          },
-          "autoFill": {
-            "title": "${paths[label].title}",
-            "json": "${paths[label].json}"
-          },
-          "addControls": {
-            "type": "dialog",
-            "body": [
-              {
-                "type": "input-text",
-                "name": "label",
-                "label": false,
-                "placeholder": "请输入名称",
-                "autoComplete": false
+          "type": "form",
+          "title": "",
+          "body": [
+            {
+              "type": "select",
+              "label": "路径",
+              "name": "path",
+              "id": "u:8722b967366f",
+              "required": true,
+              "clearable": false,
+              "source": "get:/amis/path",
+              "editable": true,
+              "creatable": true,
+              "removable": true,
+              "createBtnLabel": "新增路径",
+              "editApi": {
+                "method": "patch",
+                "url": "/amis/path",
+                "data": {
+                  "origin": "${value}",
+                  "replace_as": "${label}"
+                },
+                "dataType": "json",
+                "requestAdaptor": ""
+              },
+              "checkAll": false,
+              "multiple": false,
+              "joinValues": true,
+              "deleteApi": {
+                "method": "delete",
+                "url": "/amis/path",
+                "data": {
+                  "path": "${value}"
+                },
+                "dataType": "json"
+              },
+              "submitOnChange": false,
+              "validateApi": "",
+              "validateOnChange": true,
+              "autoComplete": "",
+              "validationErrors": {
+              },
+              "addApi": {
+                "method": "post",
+                "url": "/amis/path",
+                "data": {
+                  "path": "${label}"
+                },
+                "dataType": "json"
+              },
+              "autoFill": {
+                "title": "${paths[label].title}",
+                "json": "${paths[label].json}"
+              },
+              "addControls": {
+                "type": "dialog",
+                "body": [
+                  {
+                    "type": "input-text",
+                    "name": "label",
+                    "label": false,
+                    "placeholder": "请输入名称",
+                    "autoComplete": false
+                  }
+                ],
+                "closeOnEsc": true,
+                "closeOnOutside": true,
+                "showCloseButton": true
+              },
+              "onEvent": {
+                "change": {
+                  "weight": 0,
+                  "actions": [
+                    {
+                      "componentId": "u:9a9d507145aa",
+                      "actionType": "reload",
+                      "dataMergeMode": "merge"
+                    }
+                  ]
+                }
               }
-            ],
-            "closeOnEsc": true,
-            "closeOnOutside": true,
-            "showCloseButton": true
-          }
-        },
-        {
-          "type": "input-text",
-          "label": "标题",
-          "name": "title",
-          "id": "u:9a9d507145aa",
-          "required": true,
-          "checkAll": false,
-          "autoComplete": false,
-          "options": [
+            },
+            {
+              "type": "input-text",
+              "label": "标题",
+              "name": "title",
+              "id": "u:9a9d507145aa",
+              "required": true,
+              "checkAll": false,
+              "autoComplete": false,
+              "options": [
+              ],
+              "addOn": null,
+              "showCounter": false
+            },
+            {
+              "type": "editor",
+              "label": "JSON",
+              "name": "json",
+              "id": "u:ac9f93e6e14e",
+              "size": "xl",
+              "required": true,
+              "options": {
+                "tabSize": 2
+              },
+              "language": "json"
+            }
           ],
-          "addOn": null,
-          "showCounter": false
-        },
+          "api": {
+            "method": "post",
+            "url": "/amis/set_pages",
+            "data": null,
+            "dataType": "json",
+            "replaceData": false
+          },
+          "id": "u:98f14e7b6866",
+          "wrapWithPanel": true,
+          "submitText": "提交",
+          "persistData": false,
+          "debug": false,
+          "checkAll": false,
+          "initApi": "/amis/all_pages",
+          "actions": [
+            {
+              "type": "submit",
+              "label": "提交",
+              "actionType": "submit",
+              "dialog": {
+                "title": "系统提示",
+                "body": "对你点击了"
+              },
+              "id": "u:bfe7199fd833",
+              "level": "primary",
+              "reload": "forms"
+            }
+          ],
+          "name": "forms",
+          "silentPolling": true,
+          "stopAutoRefreshWhen": "oldPath==path",
+          "messages": {
+            "fetchFailed": "",
+            "saveSuccess": "成功",
+            "saveFailed": "失败"
+          }
+        }
+      ],
+      "id": "u:154e8f522e97",
+      "hash": "amis"
+    },
+    {
+      "title": "字符串转化",
+      "body": [
         {
           "type": "editor",
-          "label": "JSON",
-          "name": "json",
-          "id": "u:ac9f93e6e14e",
-          "size": "xl",
-          "required": true,
-          "options": {
-            "tabSize": 2
+          "label": "js代码",
+          "name": "aaa",
+          "id": "u:92557c2f8314",
+          "language": "javascript",
+          "onEvent": {
+            "change": {
+              "weight": 0,
+              "actions": [
+                {
+                  "actionType": "custom",
+                  "script": "function filterObject(obj, callback, path = '', result = [], deep = 10) {\n  if (deep < 0) {\n    return;\n  }\n  for (let key in obj) {\n    if (obj.hasOwnProperty(key)) {\n      let value = obj[key];\n      let currentPath = path ? `${path}.${key}` : key;\n      if (callback(value, key, obj)) {\n        result.push(currentPath);\n      }\n      if (typeof value === 'object') {\n        filterObject(value, callback, currentPath, result, deep - 1);\n      }\n    }\n  }\n  return result;\n}\nqwq = filterObject(context, (key, value) => {\n  return typeof value === 'string' && value.includes('bbb');\n});\n\nconsole.log(qwq, context);"
+                }
+              ]
+            }
           },
-          "language": "json"
-        }
-      ],
-      "api": {
-        "method": "post",
-        "url": "/amis/set_pages",
-        "data": null,
-        "dataType": "json",
-        "replaceData": false
-      },
-      "id": "u:98f14e7b6866",
-      "wrapWithPanel": true,
-      "submitText": "提交",
-      "persistData": false,
-      "debug": false,
-      "checkAll": false,
-      "initApi": "/amis/all_pages",
-      "actions": [
+          "resetValue": "${bbb}"
+        },
         {
-          "type": "submit",
-          "label": "提交",
-          "actionType": "submit",
-          "dialog": {
-            "title": "系统提示",
-            "body": "对你点击了"
+          "type": "textarea",
+          "label": "转义后字符串",
+          "name": "bbb",
+          "id": "u:f38e2c69e26b",
+          "minRows": 1,
+          "maxRows": 20,
+          "trimContents": false,
+          "showCounter": true,
+          "onEvent": {
+            "change": {
+              "weight": 0,
+              "actions": [
+                {
+                  "componentId": "u:92557c2f8314",
+                  "groupType": "component",
+                  "actionType": "reset"
+                }
+              ]
+            }
           },
-          "id": "u:bfe7199fd833",
-          "level": "primary",
-          "reload": "forms"
+          "resetValue": "${aaa}"
         }
       ],
-      "name": "forms",
-      "silentPolling": true,
-      "stopAutoRefreshWhen": "oldPath==path",
-      "messages": {
-        "fetchFailed": "",
-        "saveSuccess": "成功",
-        "saveFailed": "失败"
-      }
+      "id": "u:bc56dad5adb7"
     }
   ],
-  "messages": {
-  },
-  "style": {
-  }
+  "tabsMode": "chrome"
 }"""
 
 HEADERS = {

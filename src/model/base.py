@@ -1,28 +1,35 @@
+from pitricks.utils import make_parent_top, print_exc, acatch_exp
+make_parent_top(2)
+
+import re
 import traceback
 from contextvars import ContextVar
 from typing import *
 
-import regex as re
-from configparser import ConfigParser
+from sqlmodel import SQLModel
+from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from ..conf import get_sql_url
+from ..conf import read_sql_conf
 from ..utils import kwargs_to_dict
 
+SQL_CONF = read_sql_conf()
 
 async_scoped_session: ContextVar[Optional[AsyncSession]] = ContextVar('async_scoped_session', default=None)
 
-engine=create_async_engine(get_sql_url(), echo=False, future=True)
-SessionMaker = async_sessionmaker(bind=engine, class_=AsyncSession, future=True, expire_on_commit=False)
+engine=create_async_engine(SQL_CONF['url'], echo=SQL_CONF['debug'], )
+sessionMaker = async_sessionmaker(
+  bind=engine, class_=AsyncSession, 
+  expire_on_commit=False)
 
 
 
-def get_session(**kwargs) -> AsyncSession:
+def get_sess(**kwargs) -> AsyncSession:
   """获取单个协程的session"""
   if (sess:=async_scoped_session.get()) is None:
-    sess=SessionMaker(**kwargs)
-    async_scoped_session.set(sess)  # type: ignore
+    sess=sessionMaker(**kwargs)
+    async_scoped_session.set(sess)
   assert isinstance(sess, AsyncSession), f'async_scoped_session.get() returned {type(sess)} but not AsyncSession'
   # print(id(sess))
   return sess
@@ -33,40 +40,17 @@ async def close_session():
     await sess.close()
     async_scoped_session.set(None)
 
-async def db_sess():
-  db = get_session()
+async def db_sess_dp():
+  db = get_sess()
   try:
     yield db
-    await db.commit()
-  except:
+    if db.dirty: # 获取是否有修改
+      await db.commit()
+  except Exception as e:
     await db.rollback()
+    print_exc()
   finally:
     await close_session()
-
-async def catch_exp(coroutine: Coroutine[Any, Any, None],
-                    echo=False,
-                    raise_exp=False,
-                    catch_classes=Exception,
-                    catch_regex=".*"):
-  if not isinstance(catch_classes, tuple):
-    catch_classes = (catch_classes, )
-
-  try:
-    await coroutine
-    return True
-  except catch_classes as e:
-    if raise_exp:
-      raise
-
-    if catch_regex != ".*":
-      info = str(e)
-      if not re.search(catch_regex, info):
-        raise
-
-    if echo:
-      traceback.print_exc()
-
-    return False
 
 
 async def commit(echo=False,
@@ -80,9 +64,8 @@ async def commit(echo=False,
   如果有捕捉到错误, 就返回False, 否则返回True
   """
   kwargs=kwargs_to_dict()
-  # async with get_session() as sess:
-  sess=get_session()
-  return await catch_exp(sess.commit(), **kwargs)
+  sess=get_sess()
+  return not (await acatch_exp(sess.commit(), failed_return=True, **kwargs))
   
 
 async def flush(echo=False,
@@ -96,16 +79,15 @@ async def flush(echo=False,
   如果有捕捉到错误, 就返回False, 否则返回True
   """
   kwargs=kwargs_to_dict()
-  # async with get_session() as sess:
-  sess=get_session()
-  return await catch_exp(sess.flush(), **kwargs)
+  sess=get_sess()
+  return not (await acatch_exp(sess.flush(), failed_return=True, **kwargs))
 
 
 async def create_all_tables(drop_exist = False):
   async with engine.begin() as conn:
     if drop_exist:
-      await conn.run_sync(Base.metadata.drop_all)
-    await conn.run_sync(Base.metadata.create_all)
+      await conn.run_sync(SQLModel.metadata.drop_all)
+    await conn.run_sync(SQLModel.metadata.create_all)
   await engine.dispose()
 
 
@@ -113,6 +95,14 @@ async def close_engine():
   await engine.dispose()
 
 
-class Base(DeclarativeBase):
-  """创建基类, 并且允许不对应的注解"""
-  __allow_unmapped__ = True
+class Model(SQLModel):
+  
+  def update(self, model: 'Model | dict', 
+             *,
+             exclude_unset=True,
+             update: dict[str, Any] | None = None):
+    if isinstance(model, dict):
+      return self.sqlmodel_update(model, update=update)
+    else:
+      return self.sqlmodel_update(
+        model.model_dump(exclude_unset=exclude_unset), update=update)

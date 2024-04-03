@@ -2,11 +2,12 @@
 aiosqlite
 fastapi
 SQLAlchemy
+sqlmodel
 uvicorn
 rich
 pyyaml
 httpx
-regex
+# regex
 json5
 objprint
 nest_asyncio

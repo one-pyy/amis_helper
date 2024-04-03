@@ -1,10 +1,10 @@
 {
   cdn: [ // 这里最后不要写斜杠, 优先级按照顺序依次降低, 如果都访问不了则使用本地的(自行下载后放在amis_sdk目录下)
-    "https://cdnjs.loli.net/ajax/libs/amis/2.7.2", 
-    "https://libs.jshub.com/amis/2.7.2",
-    "https://cdn.staticfile.org/amis/2.7.2",
-    "https://cdn.bootcdn.net/ajax/libs/amis/2.7.2",
-    "https://fastly.jsdelivr.net/npm/amis@2.7.2/sdk"
+    "https://cdnjs.loli.net/ajax/libs/amis/6.3.0", 
+    // "https://libs.jshub.com/amis/6.3.0",
+    // "https://cdn.staticfile.org/amis/6.3.0",
+    // "https://cdn.bootcdn.net/ajax/libs/amis/6.3.0",
+    "https://fastly.jsdelivr.net/npm/amis@6.3.0/sdk"
   ],
   password: "", // 进入amis编辑器的密码(如果不为空, 则cookie要带amis_pass)
 }

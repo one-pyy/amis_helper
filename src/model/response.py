@@ -1,8 +1,8 @@
 from typing import *
 
-from pydantic import BaseModel
+from .base import Model
 
-class AmisRes(BaseModel):
+class AmisRes(Model):
   """amis返回类"""
   status: int
   msg: str

@@ -2,16 +2,16 @@ import os
 import traceback
 from typing import *
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, JSONResponse
 
 from .app import amis, startup as app_startup
-from .model import AmisExp, AmisRes
-from .conf import ROOT_DIR
+from .model import AmisExp, AmisRes, create_all_tables, close_engine
 from .utils import patch_asyncio_event_loop, add_log_for_all
-from .sql import create_all_tables, close_engine
+from .conf import ROOT_DIR
 from .conf import read_conf
 
 patch_asyncio_event_loop()
@@ -28,18 +28,17 @@ DEBUG: bool = APP_CONF['debug'] # type: ignore
 if LOG_OPTIONS['log_all']:
   add_log_for_all(LOG_OPTIONS['ignore_headers'])
 
-app = FastAPI(docs_url="/docs" if DEBUG else None, 
-              redoc_url="/redoc" if DEBUG else None,
-              debug=DEBUG)
-
-@app.on_event("startup")
-async def start():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
   await create_all_tables(drop_exist=False)
   await app_startup()
-
-@app.on_event("shutdown")
-async def shut():
+  yield
   await close_engine()
+
+app = FastAPI(docs_url="/docs" if DEBUG else None, 
+              redoc_url="/redoc" if DEBUG else None,
+              debug=DEBUG,
+              lifespan=lifespan)
 
 app.mount("/static/amis_sdk", 
           StaticFiles(directory=ROOT_DIR/"amis_sdk"), name="amis_sdk")

@@ -5,6 +5,7 @@ from src.conf import read_conf, ROOT_DIR
 
 MAIN_CONF = read_conf("main")
 APP_CONF = read_conf("app")
+
 USE_GUI: bool = MAIN_CONF['use_GUI'] # type: ignore
 PORT: int = MAIN_CONF['port'] # type: ignore
 WORKER_NUM: int = MAIN_CONF['worker_num'] # type: ignore
@@ -12,6 +13,7 @@ DEBUG: bool = APP_CONF['debug'] # type: ignore
 
 def run_server(port: int = PORT):
   (ROOT_DIR/"log").mkdir(exist_ok=True) # type: ignore
+  
   uvicorn.run(
     "src.main_app:app", 
     host="127.0.0.1" if USE_GUI else "0.0.0.0", 
@@ -19,7 +21,7 @@ def run_server(port: int = PORT):
     reload=DEBUG, 
     log_config="src/conf/log.yaml",
     access_log=False, 
-    workers=1 if DEBUG else WORKER_NUM 
+    workers=None if DEBUG else WORKER_NUM,
   )
 
 if __name__ == '__main__':
