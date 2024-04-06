@@ -3,3 +3,5 @@ sql.db
 **/amis_sdk/**
 /.history
 **/log
+upload/
+.vscode/

@@ -1,7 +1,6 @@
 # pywebview
 aiosqlite
 fastapi
-SQLAlchemy
 sqlmodel
 uvicorn
 rich
@@ -11,3 +10,6 @@ httpx
 json5
 objprint
 nest_asyncio
+pitricks
+fastapi-amis-auth
+fastapi-amis-admin

@@ -1,4 +1,8 @@
 {
-  "sqlite": "sqlite+aiosqlite:///sql.db",
-  "mysql": "mysql+aiomysql://127.0.0.1:3306/fastapi_mod?user=root&password=???"
+  default_sql: "mysql", // 使用的数据库类型
+  "url": {
+    "sqlite": "sqlite+aiosqlite:///sql.db",
+    "mysql": "mysql+aiomysql://127.0.0.1:3306/fastapi_mod?user=root&password=root"
+  },
+  "debug": true,
 }

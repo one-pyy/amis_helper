@@ -1,15 +1,16 @@
+from collections import UserDict
 import sys
 import random
-from typing import *
+from typing import Any, Literal, Union, Awaitable, Iterable
 import asyncio as ai
 
 
-def get_upper_kwargs(level=1) -> Dict[str, Any]:
+def get_upper_kwargs(level=1) -> dict[str, Any]:
   """ 获取上x层的变量, 但是请不要修改它 """
   return sys._getframe(level+1).f_locals
 
 
-def kwargs_to_dict() -> Dict[str, Any]:
+def kwargs_to_dict() -> dict[str, Any]:
   """ 获取本层传入了什么, 于是你可以把它传给下一层 """
   kwargs = get_upper_kwargs(0)
   return kwargs
@@ -46,7 +47,7 @@ def patch_asyncio_event_loop():
   nest_asyncio.apply()
 
 
-def add_log_for_all(ignore_headers: List[str]):
+def add_log_for_all(ignore_headers: list[str]):
   import logging
   import re
   try:
@@ -93,4 +94,13 @@ def add_log_for_all(ignore_headers: List[str]):
   
   APIRoute.get_route_handler = get_route_handler
 
-
+def find_base(obj, level: int) -> type:
+  cls = obj
+  if not isinstance(obj, type):
+    cls = obj.__class__
+  
+  for _ in range(level-1):
+    cls = cls.__base__
+  assert cls is not None
+  
+  return super(cls, obj)

@@ -24,7 +24,6 @@ sessionMaker = async_sessionmaker(
   expire_on_commit=False)
 
 
-
 def get_sess(**kwargs) -> AsyncSession:
   """获取单个协程的session"""
   if (sess:=async_scoped_session.get()) is None:
@@ -34,11 +33,13 @@ def get_sess(**kwargs) -> AsyncSession:
   # print(id(sess))
   return sess
 
+
 async def close_session():
   sess=async_scoped_session.get()
   if sess is not None:
     await sess.close()
     async_scoped_session.set(None)
+
 
 async def db_sess_dp():
   db = get_sess()

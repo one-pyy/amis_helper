@@ -12,22 +12,17 @@ from sqlmodel import delete, insert, select, update
 from sqlmodel.ext.asyncio.session import AsyncSession
 import httpx
 
-from ..conf import AMIS_TEMPLATE, SET_AMIS, read_conf, HEADERS
+from ..conf import AMIS_TEMPLATE, AMIS_EDITOR_CODE, HEADERS, APP_CONF
 from ..model import Amis, commit, db_sess_dp, flush, get_sess, AmisRes, AmisExp
+from ..admin import auth
 
 
-AMIS_CONF = read_conf("amis")
-AMIS_PASSWORD: str = AMIS_CONF['password'] # type: ignore
-CDN: List[str] = AMIS_CONF['cdn'] # type: ignore
+CDN: List[str] = APP_CONF.cdn # type: ignore
 AMIS_TEMPLATE_WITH_SDK = AMIS_TEMPLATE.replace("{%sdk_path%}", "/amis/sdk") # type: ignore
 
 
-async def amis_check(amis_pass: str = Cookie("")):
-  if amis_pass != AMIS_PASSWORD:
-    raise HTTPException(status_code=404)
-
 amis = APIRouter(tags=["amis"])
-amis_admin = APIRouter(dependencies=[Depends(amis_check)])
+amis_admin = APIRouter(dependencies=[Depends(auth.requires("root")())])
 
 pages: Dict[str, HTMLResponse] = {}
 sdk: Dict[str, RedirectResponse] = {}
@@ -125,9 +120,9 @@ async def get_amis_page(path: str = Path(...)):
 async def get_js(path: str = Path(...)):
   return sdk.get(path, RedirectResponse(f"/static/amis_sdk/{path}"))
 
-@amis_admin.get("/set_pages")
-def set_amis_HTML_page():
-  return make_amis_page(*SET_AMIS)
+# @amis_admin.get("/set_pages")
+# def set_amis_HTML_page():
+#   return make_amis_page(*AMIS_EDITOR_CODE)
 
 
 amis.include_router(amis_admin)

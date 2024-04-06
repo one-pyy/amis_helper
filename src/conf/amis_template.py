@@ -45,13 +45,13 @@ AMIS_TEMPLATE="""
 </html>
 """
 
-SET_AMIS="amis页面增删改查", r"""
+AMIS_EDITOR_CODE="AMIS页面CRUD", r"""
 {
   "type": "tabs",
   "id": "u:6b9ae22bcb9e",
   "tabs": [
     {
-      "title": "amis页面增删改查",
+      "title": "AMIS pages CRUD",
       "body": [
         {
           "type": "form",
@@ -94,8 +94,7 @@ SET_AMIS="amis页面增删改查", r"""
               "validateApi": "",
               "validateOnChange": true,
               "autoComplete": "",
-              "validationErrors": {
-              },
+              "validationErrors": {},
               "addApi": {
                 "method": "post",
                 "url": "/amis/path",
@@ -134,7 +133,8 @@ SET_AMIS="amis页面增删改查", r"""
                     }
                   ]
                 }
-              }
+              },
+              "size": "full"
             },
             {
               "type": "input-text",
@@ -144,8 +144,7 @@ SET_AMIS="amis页面增删改查", r"""
               "required": true,
               "checkAll": false,
               "autoComplete": false,
-              "options": [
-              ],
+              "options": [],
               "addOn": null,
               "showCounter": false
             },
@@ -197,56 +196,65 @@ SET_AMIS="amis页面增删改查", r"""
             "fetchFailed": "",
             "saveSuccess": "成功",
             "saveFailed": "失败"
-          }
+          },
+          "feat": "Edit"
         }
       ],
       "id": "u:154e8f522e97",
       "hash": "amis"
     },
     {
-      "title": "字符串转化",
+      "title": "js code escape",
       "body": [
         {
-          "type": "editor",
-          "label": "js代码",
-          "name": "aaa",
-          "id": "u:92557c2f8314",
-          "language": "javascript",
-          "onEvent": {
-            "change": {
-              "weight": 0,
-              "actions": [
-                {
-                  "actionType": "custom",
-                  "script": "function filterObject(obj, callback, path = '', result = [], deep = 10) {\n  if (deep < 0) {\n    return;\n  }\n  for (let key in obj) {\n    if (obj.hasOwnProperty(key)) {\n      let value = obj[key];\n      let currentPath = path ? `${path}.${key}` : key;\n      if (callback(value, key, obj)) {\n        result.push(currentPath);\n      }\n      if (typeof value === 'object') {\n        filterObject(value, callback, currentPath, result, deep - 1);\n      }\n    }\n  }\n  return result;\n}\nqwq = filterObject(context, (key, value) => {\n  return typeof value === 'string' && value.includes('bbb');\n});\n\nconsole.log(qwq, context);"
+          "id": "u:a2d4f6dfb92c",
+          "type": "form",
+          "title": "",
+          "mode": "horizontal",
+          "dsType": "api",
+          "feat": "Insert",
+          "body": [
+            {
+              "type": "editor",
+              "label": "js代码",
+              "name": "js_code",
+              "id": "u:92557c2f8314",
+              "language": "javascript",
+              "onEvent": {
+                "change": {
+                  "weight": 0,
+                  "actions": [
+                    {
+                      "actionType": "setValue",
+                      "componentId": "u:f38e2c69e26b",
+                      "args": {
+                        "value": "${REPLACE(js_code, \"\\n\",\"\\\\n\")}"
+                      },
+                      "ignoreError": false
+                    }
+                  ]
                 }
-              ]
+              },
+              "resetValue": "${bbb}",
+              "mode": "normal"
+            },
+            {
+              "type": "textarea",
+              "label": "转义后js代码",
+              "name": "js_code_after_escape",
+              "id": "u:f38e2c69e26b",
+              "minRows": 1,
+              "maxRows": 20,
+              "trimContents": false,
+              "showCounter": true,
+              "onEvent": {},
+              "resetValue": "${aaa}",
+              "value": "",
+              "mode": "normal"
             }
-          },
-          "resetValue": "${bbb}"
-        },
-        {
-          "type": "textarea",
-          "label": "转义后字符串",
-          "name": "bbb",
-          "id": "u:f38e2c69e26b",
-          "minRows": 1,
-          "maxRows": 20,
-          "trimContents": false,
-          "showCounter": true,
-          "onEvent": {
-            "change": {
-              "weight": 0,
-              "actions": [
-                {
-                  "componentId": "u:92557c2f8314",
-                  "groupType": "component",
-                  "actionType": "reset"
-                }
-              ]
-            }
-          },
-          "resetValue": "${aaa}"
+          ],
+          "actions": [],
+          "resetAfterSubmit": true
         }
       ],
       "id": "u:bc56dad5adb7"
