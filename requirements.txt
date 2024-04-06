@@ -7,7 +7,7 @@ rich
 pyyaml
 httpx
 json5
-objprint
+# objprint
 nest_asyncio
 pitricks
 fastapi-amis-auth
